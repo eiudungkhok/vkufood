@@ -20,8 +20,7 @@ if ($data) {
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
         
-        if (password_verify($password, $user['password'])) {
-            // LƯU THÔNG TIN VÀO SESSION TRÊN SERVER
+if ($password === $user['password']) {            // LƯU THÔNG TIN VÀO SESSION TRÊN SERVER
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role']; // <<< LƯU VAI TRÒ
             
