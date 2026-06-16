@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thực đơn - VKU FOOD</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* Popup và modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      overflow-y: auto; /* Cho phép cuộn trang nếu modal dài */
+    }
+    .modal-content {
+      background: white;
+      margin: 5% auto;
+      padding: 25px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 600px; /* Tăng chiều rộng để hiển thị chi tiết rõ hơn */
+      text-align: center;
+      position: relative;
+      animation: slideDown 0.3s ease;
+    }
+    @keyframes slideDown { from {transform: translateY(-50px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+    
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 28px;
+      cursor: pointer;
+      color: #888;
+      transition: color 0.2s;
+    }
+    .close-btn:hover { color: #333; }
+
+    /* Cart Popup */
+    .cart-popup {
+      display: none;
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      width: 320px;
+      background: white;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      z-index: 998;
+      padding: 15px;
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 1px solid #eee;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      border-bottom: 1px dashed #eee;
+      padding-bottom: 8px;
+    }
+    .cart-controls button {
+      width: 24px;
+      height: 24px;
+      border: 1px solid #ddd;
+      background: #fff;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .cart-controls button:hover { background: #f0f0f0; }
+
+    /* Menu Grid */
+    .menu-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 25px;
+      margin-top: 20px;
+    }
+    .food-card {
+      border: 1px solid #eee;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      transition: transform 0.3s, box-shadow 0.3s;
+      background: white;
+      padding-bottom: 15px;
+      text-align: center;
+    }
+    .food-card:hover { 
+        transform: translateY(-5px); 
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .food-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+    .food-info { padding: 15px; }
+    .food-info h4 { margin: 0 0 5px; font-size: 1.1em; color: #333; }
+    .food-price {
+      color: #ff4d00;
+      font-weight: 800;
+      font-size: 1.2em;
+      margin: 5px 0 15px;
+    }
+
+    /* Checkout Item List (Trong Modal) */
+    .checkout-list {
+        text-align: left;
+        margin-bottom: 20px;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #eee;
+        padding: 10px;
+        border-radius: 5px;
+        background: #fcfcfc;
+    }
+    .checkout-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+    }
+    .checkout-item:last-child { border-bottom: none; }
+    .checkout-item strong { color: #333; }
+    .checkout-item span { color: #666; }
+
+    /* Navigation Active States */
+    nav ul li a.active {
+        background-color: white;
+        color: #ff4d00;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+    nav ul li a[title="Đăng xuất"] {
+        color: #fff;
+        background-color: #a83d00;
+        border-radius: 5px;
+        padding: 5px 10px;
+        transition: background-color 0.3s;
+    }
+    nav ul li a[title="Đăng xuất"]:hover {
+        background-color: #d15a1a;
+    }
+  </style>
+</head>
+<body>
+  
+  <script>
+    function handleLogout() {
+        localStorage.removeItem('user');
+        fetch('http://localhost/vkufood/api/logout.php') 
+            .then(() => { window.location.href = 'index.html'; })
+            .catch(() => { window.location.href = 'index.html'; });
+    }
+
+    function getUserRole() {
+        const userJson = localStorage.getItem('user');
+        if (!userJson) return { loggedIn: false, role: 'guest' };
+        try {
+            const user = JSON.parse(userJson);
+            return { loggedIn: true, role: user.role || 'user', name: user.fullname || 'Người dùng' };
+        } catch (e) { return { loggedIn: false, role: 'guest' }; }
+    }
+
+    function updateNav() {
+        const { loggedIn, role, name } = getUserRole();
+        const navUl = document.getElementById('mainNavList');
+        if (!navUl) return; 
+
+        let navLinks = `
+            <li><a href="home.html" id="navHome">Trang chủ</a></li>
+            <li><a href="menu.html" id="navMenu">Thực đơn</a></li>
+            <li><a href="about.html" id="navAbout">Giới thiệu</a></li>
+        `;
+
+        if (loggedIn) {
+            if (role === 'admin') {
+                navLinks += `<li><a href="admin.html" id="navAdmin">Quản trị</a></li>`;
+            }
+            navLinks += `
+                <li><a href="account.html" id="navAccount" title="Tài khoản của ${name}">Tài khoản</a></li>
+                <li><a href="#" onclick="handleLogout()" title="Đăng xuất">Đăng xuất</a></li>
+            `;
+        } else {
+            navLinks += `<li><a href="index.html" id="navLogin">Đăng nhập</a></li>`;
+        }
+
+        navUl.innerHTML = navLinks;
+        const path = window.location.pathname.split('/').pop().toLowerCase();
+        if (path === 'menu.html') document.getElementById('navMenu')?.classList.add('active');
+    }
+    document.addEventListener('DOMContentLoaded', updateNav);
+  </script>
+
+  <nav>
+    <div class="container" style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="logo">VKU FOOD</div>
+        <ul id="mainNavList"></ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="menu-hero" style="text-align:center; margin: 40px 0;">
+      <h2 style="font-size: 2em; color: #ff4d00;">Thực đơn hôm nay 😋</h2>
+      <p style="color: #666;">Chọn ngay món ngon, giao hàng tận nơi!</p>
+    </section>
+    
+    <div class="toolbar" style="display:flex; gap:15px; align-items:center; margin-bottom:30px; justify-content: center;">
+      <input id="searchInput" type="text" placeholder="Tìm kiếm món ăn..." style="flex:1; max-width:400px; padding:12px; border:1px solid #ddd; border-radius:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+      <select id="sortSelect" style="padding:12px; border:1px solid #ddd; border-radius:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+        <option value="default">Sắp xếp theo</option>
+        <option value="asc">Giá: Thấp đến Cao</option>
+        <option value="desc">Giá: Cao đến Thấp</option>
+      </select>
+    </div>
+    
+    <div class="menu-list" id="menuList">
+        <p style="text-align:center; width:100%">Đang tải món ăn...</p>
+    </div>
+  </main>
+
+  <button class="cart-btn" onclick="toggleCart()">
+    🛒 <span id="cartCount" style="position:absolute; top:0; right:0; background:red; color:white; font-size:12px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid white;">0</span>
+  </button>
+
+  <div id="cartPopup" class="cart-popup">
+    <h3 style="border-bottom: 2px solid #ff4d00; padding-bottom: 10px; margin-top: 0;">Giỏ hàng của bạn</h3>
+    <div id="cartItems"></div>
+    <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+        <p><strong>Tổng cộng:</strong> <span id="totalPrice" style="color: #ff4d00; font-size: 1.2em;">0</span>đ</p>
+        <button class="btn btn-primary" onclick="showCheckoutModal()" style="width: 100%; margin-top: 10px;">Thanh toán ngay</button>
+        <button onclick="toggleCart()" style="width: 100%; margin-top: 5px; padding: 8px; border: none; background: #eee; border-radius: 5px; cursor: pointer;">Đóng</button>
+    </div>
+  </div>
+
+  <div id="itemDetailModal" class="modal">
+    <div class="modal-content" id="itemDetailContent" style="text-align:left;">
+        <span class="close-btn" onclick="closeItemDetail()">&times;</span>
+        <div style="display:flex; align-items:center; gap:15px; margin-bottom: 20px;">
+            <img id="detailImage" src="" alt="Hình món" style="width:120px; height:120px; object-fit:cover; border-radius:8px; border: 1px solid #eee;">
+            <div>
+                <h3 id="detailName" style="margin:0 0 5px 0; color: #333;"></h3>
+                <p style="margin:0; color: #ff4d00; font-size: 1.2em; font-weight: bold;">Giá: <span id="detailPrice"></span></p>
+            </div>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <h4 style="margin-bottom: 5px;">Mô tả</h4>
+            <p id="detailDesc" style="color:#666; font-size: 0.95em; line-height: 1.5;"></p>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <h4 style="margin-bottom: 5px;">Thành phần</h4>
+            <ul id="detailIngredients" style="padding-left:20px; color: #555; font-size: 0.9em;"></ul>
+        </div>
+        <div style="display:flex; align-items:center; gap:15px; border-top: 1px solid #eee; padding-top: 15px;">
+            <label for="detailQty"><strong>Số lượng:</strong></label>
+            <input type="number" id="detailQty" min="1" value="1" style="width:60px; padding:8px; border-radius: 5px; border: 1px solid #ccc;">
+            <button class="btn btn-primary" onclick="addDetailToCart()" style="flex: 1;">Thêm vào giỏ</button>
+        </div>
+    </div>
+  </div>
+
+  <div id="checkoutModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="document.getElementById('checkoutModal').style.display='none'">&times;</span>
+      <h2 style="color:#ff4d00; margin-bottom: 20px;">Xác nhận đơn hàng</h2>
+      
+      <div style="text-align: left; margin-bottom: 10px;"><strong>Chi tiết đơn hàng:</strong></div>
+      <div id="checkoutCartList" class="checkout-list">
+          </div>
+
+      <div style="margin: 20px 0; text-align: left;">
+        <label style="display:block; margin-bottom:5px;"><strong>Người nhận:</strong></label>
+        <input type="text" id="orderName" placeholder="Họ tên" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:5px;">
+        
+        <label style="display:block; margin-bottom:5px;"><strong>Số điện thoại:</strong></label>
+        <input type="text" id="orderPhone" placeholder="SĐT liên hệ" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:5px;">
+        
+        <label style="display:block; margin-bottom:5px;"><strong>Địa chỉ giao hàng:</strong></label>
+        <textarea id="orderAddress" rows="3" placeholder="Số nhà, đường..." style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;"></textarea>
+      </div>
+
+      <div style="background:#fff8e1; padding:15px; border-radius:8px; text-align: right; margin-bottom: 20px; border: 1px solid #ffe0b2;">
+        <p style="margin:0;">Tổng tiền thanh toán: <strong id="finalTotal" style="color:#ff4d00; font-size:1.4em;">0đ</strong></p>
+      </div>
+
+      <button onclick="submitOrder()" class="btn btn-primary" style="width:100%; font-size: 1.1em; padding: 12px;">🚀 Đặt hàng ngay</button>
+    </div>
+  </div>
+
+  <script src="js/menu.js"></script>
+</body>
+</html>

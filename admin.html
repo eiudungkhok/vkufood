@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quản trị - VKU FOOD</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* -------------------------------------
+       CSS GIAO DIỆN ADMIN (FINAL)
+       ------------------------------------- */
+    body {
+        background-color: #f4f6f9;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+    }
+
+    .container {
+        max-width: 1300px;
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+
+    /* Card Layout */
+    .card {
+        padding: 30px;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+        border-left: 5px solid #ff4d00;
+        transition: 0.3s;
+    }
+
+    .card h2 {
+        color: #ff4d00;
+        font-size: 24px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin: 0 0 20px;
+        font-weight: 600;
+    }
+
+    /* Grid 2 Cột (Form + List) */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr; /* 1 phần form, 2 phần list */
+        gap: 35px;
+        align-items: flex-start;
+    }
+
+    .add-form, .dish-list-view {
+        background: #fff;
+        padding: 0; 
+    }
+
+    .add-form h3, .dish-list-view h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 18px;
+        margin-bottom: 15px;
+        border-bottom: 1px dashed #eee;
+        padding-bottom: 5px;
+    }
+
+    /* Inputs */
+    input[type="text"], input[type="number"], textarea, input[type="file"] {
+        width: 100%;
+        padding: 10px 12px;
+        margin: 5px 0 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+    
+    /* Menu List Grid */
+    .menu-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 20px;
+    }
+    
+    .food-card {
+        border: 1px solid #eee;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        background: #fff;
+        transition: transform 0.2s;
+    }
+    .food-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    
+    .food-card img {
+        height: 100px;
+        width: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }
+
+    .food-card button {
+        cursor: pointer;
+        padding: 6px 12px;
+        margin: 0 4px;
+        border-radius: 4px;
+        border: none;
+        color: white;
+        font-size: 13px;
+    }
+
+    /* History List */
+    #historyList .card {
+        background: #fff8f5;
+        padding: 15px;
+        border: 1px solid #ffaa80;
+        margin-bottom: 15px;
+        border-left: 5px solid #28a745;
+    }
+
+    /* Modal */
+    .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); overflow-y: auto; }
+    .modal-content { background:white; margin:5% auto; padding:25px; border-radius:10px; max-width:450px; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .close-btn { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #888; }
+
+    /* Nav Active Override */
+    nav ul li a.active { background-color: white; color: #ff4d00; padding: 5px 10px; border-radius: 5px; font-weight: bold; }
+    nav ul li a[title="Đăng xuất"] { background-color: #a83d00; color: white; border-radius: 5px; padding: 5px 10px; }
+  </style>
+</head>
+
+<body>
+
+  <script>
+    function handleLogout() {
+        localStorage.removeItem('user');
+        fetch('http://localhost/vkufood/api/logout.php')
+            .then(() => window.location.href = 'index.html')
+            .catch(() => window.location.href = 'index.html');
+    }
+
+    function getUserRole() {
+        const userJson = localStorage.getItem("user");
+        if (!userJson) return { loggedIn: false, role: "guest" };
+        try {
+            const user = JSON.parse(userJson);
+            return { loggedIn: true, role: user.role || "user", name: user.fullname || "Người dùng" };
+        } catch { return { loggedIn: false, role: "guest" }; }
+    }
+
+    function checkAdminAccess() {
+        const user = getUserRole();
+        if (!user.loggedIn) window.location.href = "index.html";
+        if (user.role !== "admin") window.location.href = "home.html";
+    }
+    checkAdminAccess();
+
+    function updateNav() {
+        const { loggedIn, role, name } = getUserRole();
+        const navUl = document.getElementById("mainNavList");
+        if (!navUl) return;
+
+        let navLinks = `<li><a href="home.html">Trang chủ</a></li><li><a href="menu.html">Thực đơn</a></li><li><a href="about.html">Giới thiệu</a></li>`;
+        if (loggedIn) {
+            if (role === "admin") navLinks += `<li><a href="admin.html" class="active">Quản trị</a></li>`;
+            navLinks += `<li><a href="account.html">Tài khoản</a></li><li><a href="#" onclick="handleLogout()" title="Đăng xuất">Đăng xuất</a></li>`;
+        } else {
+            navLinks += `<li><a href="index.html">Đăng nhập</a></li>`;
+        }
+        navUl.innerHTML = navLinks;
+    }
+    document.addEventListener("DOMContentLoaded", updateNav);
+  </script>
+
+  <nav>
+    <div class="logo">VKU FOOD</div>
+    <button class="nav-toggle" style="display:none">☰</button>
+    <ul id="mainNavList"></ul>
+  </nav>
+
+  <main class="container">
+    
+    <section class="card">
+      <h2>🍔 Quản lý món ăn</h2>
+
+      <div class="content-grid">
+        <div class="add-form">
+          <h3>Thêm món mới</h3>
+          <form id="dishForm">
+            <label>Tên món</label>
+            <input type="text" id="dishName" required>
+
+            <label>Giá (đ)</label>
+            <input type="number" id="dishPrice" min="0" required>
+
+            <label>Ảnh món (Chọn File)</label>
+            <input type="file" id="dishImage" accept="image/*">
+
+            <label>Mô tả</label>
+            <textarea id="dishDesc" rows="2"></textarea>
+
+            <label>Thành phần</label>
+            <input type="text" id="dishIngredients">
+
+            <button class="btn-primary" type="submit">➕ Thêm món</button>
+          </form>
+        </div>
+
+        <div class="dish-list-view">
+          <h3>Danh sách món hiện tại</h3>
+          <div id="dishList" class="menu-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>📜 Đơn hàng mới</h2>
+      <div id="historyList"></div>
+    </section>
+
+    <section class="card">
+      <h2>📢 Thông báo trang chủ</h2>
+      <form id="noteForm">
+        <label>Nội dung thông báo</label>
+        <input type="text" id="noteText" required>
+        <button class="btn-primary" type="submit" style="background:#007bff; width:100%; margin-top:10px;">Thêm thông báo</button>
+      </form>
+      <div style="margin-top:20px">
+        <h3>Danh sách thông báo hiện tại</h3>
+        <ul id="noteList" style="list-style:none; padding:0;"></ul>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="editDishModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="document.getElementById('editDishModal').style.display='none'">&times;</span>
+      <h3 style="color:#ff4d00; text-align:center; margin-bottom:20px;">Chỉnh sửa món ăn</h3>
+
+      <form onsubmit="event.preventDefault(); updateDish();">
+        <input type="hidden" id="editDishId">
+        <input type="hidden" id="editDishOldImage"> 
+
+        <label>Tên món</label>
+        <input type="text" id="editDishName" required>
+
+        <label>Giá (đ)</label>
+        <input type="number" id="editDishPrice" min="0" required>
+
+        <label>Ảnh hiện tại:</label>
+        <div style="text-align: center; margin-bottom: 10px;">
+             <img id="editDishPreview" src="" alt="Current Image" style="height: 100px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px;">
+        </div>
+        
+        <label>Chọn ảnh mới (Để trống nếu không đổi):</label>
+        <input type="file" id="editDishImageFile" accept="image/*">
+
+        <label>Mô tả</label>
+        <textarea id="editDishDesc" rows="2"></textarea>
+
+        <label>Thành phần</label>
+        <input type="text" id="editDishIngredients">
+
+        <button class="btn-primary" type="submit" style="background:#3498db; margin-top:15px;">Lưu thay đổi</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/admin.js"></script>
+
+</body>
+</html>

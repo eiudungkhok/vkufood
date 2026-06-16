@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Giới thiệu - VKU FOOD</title>
+  <link rel="stylesheet" href="css/main.css " />
+  <style>
+    /* ... (CSS Styling) ... */
+    nav ul li a.active { /* Thêm CSS cho link active */
+        background-color: white;
+        color: #ff4d00;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+    nav ul li a[title="Đăng xuất"] { /* CSS cho nút Đăng xuất */
+        color: #fff;
+        background-color: #a83d00;
+        border-radius: 5px;
+        padding: 5px 10px;
+        transition: background-color 0.3s;
+    }
+    nav ul li a[title="Đăng xuất"]:hover {
+        background-color: #d15a1a;
+    }
+  </style>
+</head>
+<body>
+  
+  <script>
+    // [Đoạn mã JavaScript CHUNG (handleLogout, getUserRole, updateNav) sẽ được đặt tại đây - Tham khảo home.html]
+    function handleLogout() {
+        localStorage.removeItem('user');
+        fetch('http://localhost/vkufood/api/logout.php') 
+            .then(() => {
+                window.location.href = 'index.html';
+            })
+            .catch(() => {
+                window.location.href = 'index.html';
+            });
+    }
+
+    function getUserRole() {
+        const userJson = localStorage.getItem('user');
+        if (!userJson) return { loggedIn: false, role: 'guest' };
+        
+        try {
+            const user = JSON.parse(userJson);
+            return { 
+                loggedIn: true, 
+                role: user.role || 'user', 
+                name: user.fullname || 'Người dùng' 
+            };
+        } catch (e) {
+            console.error("Lỗi parse user data:", e);
+            return { loggedIn: false, role: 'guest' };
+        }
+    }
+
+    function updateNav() {
+        const { loggedIn, role, name } = getUserRole();
+        const navUl = document.getElementById('mainNavList');
+        
+        if (!navUl) return; 
+
+        let navLinks = `
+            <li><a href="home.html" id="navHome">Trang chủ</a></li>
+            <li><a href="menu.html" id="navMenu">Thực đơn</a></li>
+            <li><a href="about.html" id="navAbout">Giới thiệu</a></li>
+        `;
+
+        if (loggedIn) {
+            if (role === 'admin') {
+                navLinks += `
+                    <li><a href="admin.html" id="navAdmin">Quản trị</a></li>
+                `;
+            }
+            navLinks += `
+                <li><a href="account.html" id="navAccount" title="Tài khoản của ${name}">Tài khoản</a></li>
+                <li><a href="#" onclick="handleLogout()" title="Đăng xuất" id="navLogout">Đăng xuất</a></li>
+            `;
+        } else {
+            navLinks += `
+                <li><a href="index.html" id="navLogin">Đăng nhập</a></li>
+            `;
+        }
+
+        navUl.innerHTML = navLinks;
+        
+        // Highlight active link
+        const path = window.location.pathname.split('/').pop().toLowerCase();
+        navUl.querySelectorAll('a').forEach(a => a.classList.remove('active'));
+
+        if (path === 'home.html' || path === '') document.getElementById('navHome')?.classList.add('active');
+        else if (path === 'menu.html') document.getElementById('navMenu')?.classList.add('active');
+        else if (path === 'about.html') document.getElementById('navAbout')?.classList.add('active');
+        else if (path === 'account.html') document.getElementById('navAccount')?.classList.add('active');
+        else if (path === 'admin.html') document.getElementById('navAdmin')?.classList.add('active');
+        else if (path === 'index.html' && !loggedIn) document.getElementById('navLogin')?.classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', updateNav);
+  </script>
+  <nav>
+    <div class="logo">VKU FOOD</div>
+    <ul id="mainNavList">
+      </ul>
+  </nav>
+  
+  <main class="container">
+    <section class="intro">
+      <h2>Về VKU FOOD</h2>
+      <p>VKU FOOD là hệ thống đặt món ăn trực tuyến được phát triển bởi sinh viên trường Đại học VKU – ĐH Đà Nẵng.
+        Mục tiêu của chúng tôi là mang đến trải nghiệm đặt món ăn tiện lợi, nhanh chóng, cùng với những món ăn đa dạng và hấp dẫn.</p>
+      <img src="css/logoin4.png" alt="Hình ảnh về VKU FOOD" width="800" height="350">
+
+
+      <h2>Lịch sử hình thành</h2>
+      <p>Thành lập năm 2020, VKU FOOD bắt đầu từ một cửa hàng nhỏ phục vụ sinh viên trường Đại học VKU. Với chất lượng đồ ăn và dịch vụ tốt, chúng tôi đã phát triển thành hệ thống cung cấp đồ ăn cho toàn thành phố.</p>
+      <img src="css/vku.jpg" alt="Hình ảnh lịch sử VKU FOOD">
+
+      <h2>Tầm nhìn</h2>
+      <p>Trở thành hệ thống cung cấp đồ ăn nhanh uy tín nhất Đà Nẵng, mang đến cho khách hàng những bữa ăn ngon với giá cả hợp lý.</p>
+      <img src="css/vision.jpg" alt="Hình ảnh tầm nhìn VKU FOOD" width="800" height="350">
+
+      <h2>Đội ngũ của chúng tôi</h2>
+      <div class="team">
+        <div class="team-member">
+          <h3>Trần Công Đạt</h3>
+          <p>Bếp trưởng</p>
+          <p>10 năm kinh nghiệm ẩm thực</p>
+        </div>
+      </div>
+
+      <h3>💡 Tại sao chọn VKU FOOD?</h3>
+      <ul>
+        <li>Giao hàng siêu tốc – chỉ trong 30 phút</li>
+        <li>Ưu đãi mỗi ngày cho sinh viên</li>
+        <li>Đội ngũ nhiệt tình, sẵn sàng hỗ trợ</li>
+      </ul>
+    </section>
+  </main>
+  
+  <footer>
+    © 2025 VKU FOOD. All rights reserved.
+  </footer>
+</body>
+</html>

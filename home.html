@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Trang chủ - VKU FOOD</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <style>
+    /* --- CSS RIÊNG CHO TRANG CHỦ --- */
+    
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #fff8f0, #ffe5d9);
+      min-height: 100vh;
+      margin: 0; padding: 0;
+    }
+
+    /* 1. NAVBAR */
+    nav {
+      background-color: #ff4d00;
+      padding: 10px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    nav ul li a.active {
+        background-color: white;
+        color: #ff4d00;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+    nav ul li a[title="Đăng xuất"] {
+        background-color: #a83d00;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+
+    /* 2. HERO SECTION (BANNER) */
+    .hero {
+      text-align: center;
+      padding: 100px 20px;
+      /* Sử dụng ảnh banner nội bộ */
+      background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('css/banner2.png') no-repeat center center/cover;
+      color: white;
+      margin-bottom: 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .hero h1 {
+      font-size: 3.5em;
+      margin-bottom: 15px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      font-weight: 800;
+    }
+    
+    .hero p {
+      font-size: 1.3em;
+      max-width: 700px;
+      margin: 0 auto 30px auto;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    }
+
+    /* 3. DỊCH VỤ (FEATURES) */
+    .section-title {
+      text-align: center;
+      font-size: 2em;
+      color: #ff4d00;
+      margin-bottom: 30px;
+      font-weight: 700;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 60px;
+    }
+    
+    .feature-card {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease;
+      border: 1px solid #eee;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-10px);
+      border-color: #ff4d00;
+    }
+    
+    .feature-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 1.4em;
+    }
+
+    /* 4. MÓN PHỔ BIẾN */
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        padding-bottom: 50px;
+    }
+    
+    .food-card {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        text-align: center;
+        padding-bottom: 15px;
+        transition: transform 0.3s;
+    }
+    .food-card:hover { transform: translateY(-5px); }
+    
+    .food-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+    .food-card h4 { margin: 15px 0 5px; color: #333; font-size: 1.2em; }
+    .food-price { color: #ff4d00; font-weight: bold; font-size: 1.1em; margin-bottom: 15px; }
+
+    /* Banner Thông báo */
+    .announcement-banner {
+        background: #ff4d00; 
+        color: white; 
+        padding: 12px 20px; 
+        text-align: center; 
+        font-weight: 600; 
+        font-size: 1.1em;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Chat Box */
+    .floating-btn {
+      position: fixed; bottom: 30px; right: 30px;
+      background-color: #ff4d00; color: white;
+      border: none; border-radius: 50%; width: 60px; height: 60px;
+      font-size: 28px; box-shadow: 0 4px 10px rgba(255, 77, 0, 0.4);
+      cursor: pointer; transition: transform 0.3s ease; z-index: 1002;
+    }
+    .chat-box {
+      position: fixed; bottom: 100px; right: 30px; width: 320px;
+      background: white; border-radius: 12px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+      display: none; flex-direction: column; overflow: hidden; z-index: 1001;
+    }
+    .chat-header { background: #ff4d00; color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; }
+    .chat-body { height: 250px; overflow-y: auto; padding: 15px; background: #f9f9f9; display: flex; flex-direction: column; gap: 10px; }
+    .chat-input-area { display: flex; border-top: 1px solid #eee; padding: 5px; background: white; }
+    .chat-input-area input { border: none; padding: 10px; flex: 1; outline: none; }
+    .chat-input-area button { background: #ff4d00; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 5px; }
+    .bot-message { align-self: flex-start; background: #eee; padding: 8px 12px; border-radius: 15px 15px 15px 0; max-width: 80%; font-size: 14px; }
+    .user-message { align-self: flex-end; background: #ff4d00; color: white; padding: 8px 12px; border-radius: 15px 15px 0 15px; max-width: 80%; font-size: 14px; }
+  </style>
+</head>
+<body>
+  
+  <script>
+    function handleLogout() {
+        localStorage.removeItem('user');
+        fetch('http://localhost/vkufood/api/logout.php').then(() => window.location.href = 'index.html').catch(() => window.location.href = 'index.html');
+    }
+    function getUserRole() {
+        const userJson = localStorage.getItem('user');
+        if (!userJson) return { loggedIn: false, role: 'guest' };
+        try {
+            const user = JSON.parse(userJson);
+            return { loggedIn: true, role: user.role || 'user', name: user.fullname || 'Người dùng' };
+        } catch (e) { return { loggedIn: false, role: 'guest' }; }
+    }
+    function updateNav() {
+        const { loggedIn, role, name } = getUserRole();
+        const navUl = document.getElementById('mainNavList');
+        if (!navUl) return; 
+        let navLinks = `<li><a href="home.html" id="navHome">Trang chủ</a></li><li><a href="menu.html" id="navMenu">Thực đơn</a></li><li><a href="about.html" id="navAbout">Giới thiệu</a></li>`;
+        if (loggedIn) {
+            if (role === 'admin') navLinks += `<li><a href="admin.html" id="navAdmin">Quản trị</a></li>`;
+            navLinks += `<li><a href="account.html" id="navAccount">Tài khoản</a></li><li><a href="#" onclick="handleLogout()" title="Đăng xuất">Đăng xuất</a></li>`;
+        } else {
+            navLinks += `<li><a href="index.html" id="navLogin">Đăng nhập</a></li>`;
+        }
+        navUl.innerHTML = navLinks;
+        const path = window.location.pathname.split('/').pop().toLowerCase();
+        if (path === 'home.html' || path === '') document.getElementById('navHome')?.classList.add('active');
+    }
+    
+    // Announcement Logic
+    const API_URL = 'http://localhost/vkufood/api'; 
+    function displayAnnouncements() {
+        fetch(`${API_URL}/announcements.php`).then(res => res.json()).then(notes => {
+            const banner = document.getElementById('announcementBanner');
+            const textDiv = document.getElementById('announcementText');
+            if (notes && Array.isArray(notes) && notes.length > 0) {
+                textDiv.innerHTML = notes.map(note => `📣 ${note.content}`).join(' &nbsp;&nbsp;|&nbsp;&nbsp; ');
+                banner.style.display = 'block'; 
+            } else { banner.style.display = 'none'; }
+        }).catch(e => {
+             // Nếu lỗi API, ẩn banner hoặc hiển thị mặc định nếu muốn
+             document.getElementById('announcementBanner').style.display = 'none';
+        });
+    }
+    document.addEventListener('DOMContentLoaded', () => { updateNav(); displayAnnouncements(); });
+  </script>
+
+  <nav>
+    <div class="logo">VKU FOOD</div>
+    <button class="nav-toggle" style="display:none;">☰</button>
+    <ul id="mainNavList"></ul>
+  </nav>
+
+  <section id="announcementBanner" class="announcement-banner" style="display:none;">
+    <div id="announcementText"></div>
+  </section>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h1>Trải nghiệm ẩm thực hiện đại</h1>
+        <p>Đặt món nhanh chóng • Giao hàng tận nơi • Nguyên liệu tươi sạch</p>
+        <div style="margin-top: 20px;">
+            <a href="menu.html" class="btn-primary" style="padding: 12px 30px; background:white; color:#ff4d00; font-weight:bold; border-radius:30px;">Xem Thực Đơn Ngay</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="container">
+      <h2 class="section-title">Dịch vụ nổi bật</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <img src="css/delivery.jpg" alt="Giao hàng nhanh" onerror="this.src='css/logo.png'">
+          <h3>⚡ Giao hàng siêu tốc</h3>
+          <p>Đội ngũ shipper chuyên nghiệp cam kết giao món đến tay bạn trong vòng 30 phút.</p>
+        </div>
+        <div class="feature-card">
+          <img src="css/fresh.jpg" alt="Nguyên liệu sạch" onerror="this.src='css/logo.png'">
+          <h3>🥬 Nguyên liệu tươi sạch</h3>
+          <p>Nguồn thực phẩm được chọn lọc kỹ càng từ các nông trại uy tín mỗi ngày.</p>
+        </div>
+        <div class="feature-card">
+          <img src="css/doanngon.jpeg" alt="Thực đơn đa dạng" onerror="this.src='css/logo.png'">
+          <h3>🍲 Thực đơn đa dạng</h3>
+          <p>Hơn 100 món ăn từ Á sang Âu, đáp ứng mọi khẩu vị của bạn.</p>
+        </div>
+      </div>
+
+      <h2 class="section-title" id="popular">Món ngon đề xuất 🔥</h2>
+      <div class="grid">
+        <div class="food-card">
+          <img src="css/micayhaisan.jpg" alt="Mì cay" onerror="this.src='css/logo.png'">
+          <h4>Mì cay hải sản</h4>
+          <p class="food-price">49.000₫</p>
+          <div><a href="menu.html" class="btn-primary" style="display:block; padding:8px; background:#ff4d00; color:white; border-radius:5px;">Đặt ngay</a></div>
+        </div>
+        <div class="food-card">
+          <img src="css/garangion.jpg" alt="Gà rán" onerror="this.src='css/logo.png'">
+          <h4>Gà rán giòn</h4>
+          <p class="food-price">45.000₫</p>
+          <div><a href="menu.html" class="btn-primary" style="display:block; padding:8px; background:#ff4d00; color:white; border-radius:5px;">Đặt ngay</a></div>
+        </div>
+        <div class="food-card">
+          <img src="css/bundaumamtom.webp" alt="Bún đậu" onerror="this.src='css/logo.png'">
+          <h4>Bún đậu mắm tôm</h4>
+          <p class="food-price">45.000₫</p>
+          <div><a href="menu.html" class="btn-primary" style="display:block; padding:8px; background:#ff4d00; color:white; border-radius:5px;">Đặt ngay</a></div>
+        </div>
+        <div class="food-card">
+          <img src="css/suatuoichantrau.png" alt="Sữa tươi" onerror="this.src='css/logo.png'">
+          <h4>Sữa tươi trân châu</h4>
+          <p class="food-price">32.000₫</p>
+          <div><a href="menu.html" class="btn-primary" style="display:block; padding:8px; background:#ff4d00; color:white; border-radius:5px;">Đặt ngay</a></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer style="background: #333; color: white; text-align: center; padding: 20px; margin-top: 50px;">
+    © 2025 VKU FOOD. All rights reserved.
+  </footer>
+
+  <button class="floating-btn" onclick="toggleChat()" title="Chat với chúng tôi">💬</button>
+  <div id="chatBox" class="chat-box">
+    <div class="chat-header">
+      Hỗ trợ trực tuyến
+      <span onclick="toggleChat()" class="close-btn" style="color: white;">✖</span>
+    </div>
+    <div class="chat-body">
+      <div class="bot-message">Xin chào! VKU FOOD có thể giúp gì cho bạn? 😊</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." onkeydown="handleKey(event)" />
+      <button onclick="sendMessage()">Gửi</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleChat() {
+      const box = document.getElementById('chatBox');
+      box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      if (!message) return;
+      const body = document.querySelector('.chat-body');
+      const div = document.createElement('div');
+      div.className = 'user-message';
+      div.textContent = message;
+      body.appendChild(div);
+      input.value = '';
+      body.scrollTop = body.scrollHeight;
+    }
+    function handleKey(event) {
+      if (event.key === 'Enter') sendMessage();
+    }
+  </script>
+  <script src="js/main.js"></script>
+</body>
+</html>
